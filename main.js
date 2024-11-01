@@ -1,10 +1,10 @@
 let first_post = 'In fringilla eget quam ac porttitor. Sed hendrerit ultrices tincidunt. Quisque hendrerit pretium dui, vel ultricies ex fringilla nec. Aliquam eleifend pharetra dolor, eu malesuada libero imperdiet non. Nullam laoreet ullamcorper ipsum, in porttitor metus sagittis non. Cras porttitor placerat eros vel iaculis. Sed vel finibus nisl. Praesent in malesuada risus, sit amet venenatis nibh. Nulla luctus consequat erat nec lobortis. Suspendisse euismod maximus eros vel viverra. Curabitur non ullamcorper tortor. Pellentesque sagittis purus ac tristique ultricies. Cras eget molestie dolor. Morbi non tincidunt sem. '
 let next_msg = 'Morbi congue ligula ut laoreet egestas!'
 let list_msgs = ['Integer fringilla nisl sit amet ante varius mollis.',
-								 'Nullam non quam ultrices, finibus magna eu, lacinia odio.', 
-								 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
-								 'Pellentesque mollis sem a tellus congue, at faucibus enim ornare.',
-								 'Vestibulum vestibulum ex ut imperdiet ornare.']
+		 'Nullam non quam ultrices, finibus magna eu, lacinia odio.', 
+		 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
+		 'Pellentesque mollis sem a tellus congue, at faucibus enim ornare.',
+		 'Vestibulum vestibulum ex ut imperdiet ornare.']
 
 class Dialog{
 	Event_Log = [{data: '', event: '', txt: ''}]
