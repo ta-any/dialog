@@ -6,6 +6,9 @@ let list_msgs = ['Integer fringilla nisl sit amet ante varius mollis.',
 		 'Pellentesque mollis sem a tellus congue, at faucibus enim ornare.',
 		 'Vestibulum vestibulum ex ut imperdiet ornare.']
 
+input.value = ''
+input.focus()
+
 class Dialog{
 	Event_Log = [{data: '', event: '', txt: ''}]
 	list_elements = ['circle', 'text']
@@ -34,7 +37,6 @@ class Dialog{
 
 	builder_block_msg(){
 		if(this.msg.length <= 0 || /^\s+$/.test(this.msg)) return -1 
-
 		let list = this.who != 'bot' ? this.list_elements.toReversed() : this.list_elements
 		let block = document.createElement('div')
 		
@@ -52,13 +54,12 @@ class Dialog{
 	}
 
 	render(msg, who = 'bot'){
-		this.msg = msg
+				this.msg = msg
 		this.who = who
 		this.post = this.builder_block_msg()
 		dialog.appendChild(this.post)
 
-		this.record(new Date(), this.who + ' render', this.msg) 
-	}
+		this.record(new Date(), this.who + ' render', this.msg) 	}
 
 	record(data, event, txt){
 		let log = {}
@@ -78,6 +79,20 @@ class Dialog{
 	}
 }
 
+const overall = {
+	text_msg(txt){
+		let first_index = txt.indexOf('...') + 1
+		while(txt.includes('...')){
+			let index = txt.indexOf('...')
+			txt = txt.slice(0, index).concat(' ', txt.slice(index + 3, -1)) 
+		}
+
+		input.value = txt
+		input.focus()
+		input.selectionStart = input.selectionEnd = first_index 
+	}
+}
+
 
 const event = new Dialog()
 event.start()
@@ -90,3 +105,7 @@ send.addEventListener('click', (e) => {
 	event.send_msg();
 })
 
+nodes.addEventListener('click', (e) => {
+	overall.text_msg(e.target.textContent)
+	
+})
