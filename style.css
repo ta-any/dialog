@@ -88,3 +88,7 @@
 	border: 1px solid #fff;
 	padding: 1px 15px;
 }
+.node:hover{
+	background: #fff;
+	color: #000;
+}
