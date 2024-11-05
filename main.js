@@ -1,13 +1,42 @@
 let first_post = 'In fringilla eget quam ac porttitor. Sed hendrerit ultrices tincidunt. Quisque hendrerit pretium dui, vel ultricies ex fringilla nec. Aliquam eleifend pharetra dolor, eu malesuada libero imperdiet non. Nullam laoreet ullamcorper ipsum, in porttitor metus sagittis non. Cras porttitor placerat eros vel iaculis. Sed vel finibus nisl. Praesent in malesuada risus, sit amet venenatis nibh. Nulla luctus consequat erat nec lobortis. Suspendisse euismod maximus eros vel viverra. Curabitur non ullamcorper tortor. Pellentesque sagittis purus ac tristique ultricies. Cras eget molestie dolor. Morbi non tincidunt sem. '
 let next_msg = 'Morbi congue ligula ut laoreet egestas!'
-let list_msgs = ['Integer fringilla nisl sit amet ante varius mollis.',
-		 'Nullam non quam ultrices, finibus magna eu, lacinia odio.', 
-		 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
-		 'Pellentesque mollis sem a tellus congue, at faucibus enim ornare.',
-		 'Vestibulum vestibulum ex ut imperdiet ornare.']
 
 input.value = ''
 input.focus()
+
+
+const memory = {
+	'8d10c5fa-d3be-43fc-8760-466eadb1389f' : {data: '2024-11-01', txt: 'In fermentum lectus a commodo fermentum.'},
+	'97f79f84-4358-4d82-be16-983c7aaccc66' : {data: '2024-11-01', txt: 'Cras aliquam arcu sed dui condimentum, venenatis tincidunt risus sodales.'},
+	'e3075377-5975-421e-a62e-876fc718136f' : {data: '2024-11-01', txt: 'Maecenas venenatis ex lacinia enim ultrices rutrum.'},
+	'11ae2d1a-e720-48f0-b878-6886c4cf1e7d' : {data: '2024-10-28', txt: 'Fusce nec urna quis nisi bibendum cursus a id sem.'},
+	'477a7975-9bc4-4cb6-8a26-96472ceb06bf' : {data: '2024-11-05', txt: 'TODAY! Vestibulum dapibus enim ut viverra feugiat.'}
+}
+for(let node in memory){
+	let value = JSON.stringify(memory[node])
+	localStorage.setItem(node, value);
+}
+
+const day = new Date()
+const current_year = day.getFullYear()
+const today = day.toISOString().split('T')[0]
+
+function get_lst_timetable(day) {
+	let timetable = ''
+	for(let line in localStorage){
+		if (!localStorage.hasOwnProperty(line)) continue;	
+		let node = JSON.parse(localStorage.getItem(line))
+		if(node.data == day) {
+			timetable += node.txt + '\n'
+		} 
+	}	
+	if (timetable == '') {timetable += 'Nothing!'}
+	return timetable
+}
+
+ 
+
+const assign_id = () => crypto.randomUUID()
 
 class Dialog{
 	Event_Log = [{data: '', event: '', txt: ''}]
@@ -30,9 +59,12 @@ class Dialog{
 		input.value = ''
 		input.focus()
 
-		setTimeout(() => 
-			this.render(list_msgs[Math.floor(0 + Math.random() * (4 + 1 - 0))]), 
-				1500)
+		setTimeout(() => this.answer() , 1500)
+			
+	}
+
+	answer(){
+		this.render(get_lst_timetable(today)) 
 	}
 
 	builder_block_msg(){
@@ -54,7 +86,7 @@ class Dialog{
 	}
 
 	render(msg, who = 'bot'){
-				this.msg = msg
+		this.msg = msg
 		this.who = who
 		this.post = this.builder_block_msg()
 		dialog.appendChild(this.post)
@@ -80,17 +112,28 @@ class Dialog{
 }
 
 const overall = {
-	text_msg(txt){
+	text_msg(txt, element){
+		let id = element.getAttribute('id')
 		let first_index = txt.indexOf('...') + 1
 		while(txt.includes('...')){
 			let index = txt.indexOf('...')
 			txt = txt.slice(0, index).concat(' ', txt.slice(index + 3, -1)) 
 		}
+		
+		if(id == 'timetable'){ 			txt += 'today'
+			this.append_focus(txt, [first_index, first_index + 5])
+		} else {
+			this.append_focus(txt, [first_index, first_index])
+		}
 
+		
+	},
+	append_focus(txt, [start, end]){
 		input.value = txt
 		input.focus()
-		input.selectionStart = input.selectionEnd = first_index 
-	}
+		input.setSelectionRange(start, end)
+		
+	},
 }
 
 
@@ -106,6 +149,7 @@ send.addEventListener('click', (e) => {
 })
 
 nodes.addEventListener('click', (e) => {
-	overall.text_msg(e.target.textContent)
+	overall.text_msg(e.target.textContent, e.target)
 	
 })
+
