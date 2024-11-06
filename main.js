@@ -1,5 +1,10 @@
 let first_post = 'In fringilla eget quam ac porttitor. Sed hendrerit ultrices tincidunt. Quisque hendrerit pretium dui, vel ultricies ex fringilla nec. Aliquam eleifend pharetra dolor, eu malesuada libero imperdiet non. Nullam laoreet ullamcorper ipsum, in porttitor metus sagittis non. Cras porttitor placerat eros vel iaculis. Sed vel finibus nisl. Praesent in malesuada risus, sit amet venenatis nibh. Nulla luctus consequat erat nec lobortis. Suspendisse euismod maximus eros vel viverra. Curabitur non ullamcorper tortor. Pellentesque sagittis purus ac tristique ultricies. Cras eget molestie dolor. Morbi non tincidunt sem. '
 let next_msg = 'Morbi congue ligula ut laoreet egestas!'
+let list_msgs = ['Integer fringilla nisl sit amet ante varius mollis.',
+		 'Nullam non quam ultrices, finibus magna eu, lacinia odio.', 
+		 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
+		 'Pellentesque mollis sem a tellus congue, at faucibus enim ornare.',
+		 'Vestibulum vestibulum ex ut imperdiet ornare.']
 
 input.value = ''
 input.focus()
@@ -10,7 +15,7 @@ const memory = {
 	'97f79f84-4358-4d82-be16-983c7aaccc66' : {data: '2024-11-01', txt: 'Cras aliquam arcu sed dui condimentum, venenatis tincidunt risus sodales.'},
 	'e3075377-5975-421e-a62e-876fc718136f' : {data: '2024-11-01', txt: 'Maecenas venenatis ex lacinia enim ultrices rutrum.'},
 	'11ae2d1a-e720-48f0-b878-6886c4cf1e7d' : {data: '2024-10-28', txt: 'Fusce nec urna quis nisi bibendum cursus a id sem.'},
-	'477a7975-9bc4-4cb6-8a26-96472ceb06bf' : {data: '2024-11-05', txt: 'TODAY! Vestibulum dapibus enim ut viverra feugiat.'}
+	'477a7975-9bc4-4cb6-8a26-96472ceb06bf' : {data: '2024-11-06', txt: 'TODAY! Vestibulum dapibus enim ut viverra feugiat.'}
 }
 for(let node in memory){
 	let value = JSON.stringify(memory[node])
@@ -34,9 +39,25 @@ function get_lst_timetable(day) {
 	return timetable
 }
 
- 
 
 const assign_id = () => crypto.randomUUID()
+
+const Custom = {
+	btm: [{buy : 'buy...'}, {scheduled : 'scheduled to... in...'}, {timetable : 'timetable...'}],
+
+	builder_custom_btm(){	
+		this.btm.forEach(node => {
+			let DIV = document.createElement('div')
+			for(let index in node){
+				DIV.textContent = node[index]
+				DIV.classList.add('node')
+				DIV.id = index
+			}
+			nodes.appendChild(DIV)
+
+		})
+	},
+}
 
 class Dialog{
 	Event_Log = [{data: '', event: '', txt: ''}]
@@ -45,6 +66,8 @@ class Dialog{
 	constructor(){
 		this.Event_Log[0].data = new Date();
 		this.Event_Log[0].event = 'start'
+
+		this.builder_custom_btm()
 	}
 	start(){
 		this.render(first_post)
@@ -64,7 +87,13 @@ class Dialog{
 	}
 
 	answer(){
-		this.render(get_lst_timetable(today)) 
+		if(this.msg.includes('today')){
+			this.render(get_lst_timetable(today)) 
+		} else {
+			this.render('have no idea') 
+		}
+		
+		
 	}
 
 	builder_block_msg(){
@@ -86,7 +115,7 @@ class Dialog{
 	}
 
 	render(msg, who = 'bot'){
-		this.msg = msg
+				this.msg = msg
 		this.who = who
 		this.post = this.builder_block_msg()
 		dialog.appendChild(this.post)
@@ -110,6 +139,8 @@ class Dialog{
 		}
 	}
 }
+
+Object.assign(Dialog.prototype, Custom);
 
 const overall = {
 	text_msg(txt, element){
@@ -152,4 +183,3 @@ nodes.addEventListener('click', (e) => {
 	overall.text_msg(e.target.textContent, e.target)
 	
 })
-
