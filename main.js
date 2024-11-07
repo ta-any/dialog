@@ -2,10 +2,10 @@ localStorage.clear();
 let first_post = 'In fringilla eget quam ac porttitor. Sed hendrerit ultrices tincidunt. Quisque hendrerit pretium dui, vel ultricies ex fringilla nec. Proin dolor diam, hendrerit vitae quam non, accumsan rutrum nunc. In mauris metus, congue a eros sed, placerat lacinia urna. Duis a dolor eu elit commodo porta non in est. '
 let next_msg = 'Morbi congue ligula ut laoreet egestas!'
 let list_msgs = ['Integer fringilla nisl sit amet ante varius mollis.',
-								 'Nullam non quam ultrices, lacinia odio.', 
-								 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
-								 'Pellentesque at faucibus enim ornare.',
-								 'Vestibulum vestibulum ex ut imperdiet ornare.']
+		 'Nullam non quam ultrices, lacinia odio.', 
+		 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
+		 'Pellentesque at faucibus enim ornare.',
+		 'Vestibulum vestibulum ex ut imperdiet ornare.']
 
 input.value = ''
 input.focus()
@@ -23,7 +23,9 @@ const memory = {
 	'477a7975-9bc4-4cb6-8a26-96472ceb06bf' : {data: '2024-11-06', txt: 'TODAY! Vestibulum dapibus enim ut viverra feugiat.'}
 }
 
-const assign_id = () => crypto.randomUUID() for(let node in memory){
+const assign_id = () => crypto.randomUUID() 
+	
+for(let node in memory){
 	let value = JSON.stringify(memory[node])
 	localStorage.setItem(node, value);
 }
