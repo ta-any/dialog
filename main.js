@@ -128,7 +128,8 @@ class Dialog{
 	send_msg(){
 		this.msg = input.value
 		this.render(this.msg, 'user')
-		const a = new Hub(this.msg) 		let answer = a.check()
+		const a = new Hub(this.msg) 		
+		let answer = a.check()
 
 		input.value = ''
 		input.focus()
