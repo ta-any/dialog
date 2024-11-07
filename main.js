@@ -172,7 +172,7 @@ class Dialog{
 	}
 
 	render(msg, who = 'bot'){
-				this.msg = msg
+		this.msg = msg
 		this.who = who
 		this.post = this.builder_block_msg()
 		dialog.appendChild(this.post)
@@ -208,7 +208,8 @@ const overall = {
 			txt = txt.slice(0, index).concat(' ', txt.slice(index + 3, -1)) 
 		}
 		
-		if(id == 'timetable'){ 			txt += 'today'
+		if(id == 'timetable'){ 			
+			txt += 'today'
 			this.append_focus(txt, [first_index, first_index + 5])
 		} else {
 			this.append_focus(txt, [first_index, first_index])
