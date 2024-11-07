@@ -155,7 +155,8 @@ class Dialog{
 			let DIV = document.createElement('div')
 			DIV.classList.add(list[i])
 			if(DIV.classList.contains('text')){
-				DIV.innerText = this.msg 				if((i + 1) % 2 == 0){
+				DIV.innerText = this.msg 				
+				if((i + 1) % 2 == 0){
 					DIV.style.marginLeft = '40px'
 					DIV.style.marginRight = '6em'
 				} else {
