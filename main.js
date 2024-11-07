@@ -147,7 +147,8 @@ class Dialog{
 	}
 
 	builder_block_msg(){
-		if(this.msg.length <= 0 || /^\s+$/.test(this.msg)) return -1 
+		if(this.msg.length <= 0 || /^\s+$/.test(this.msg)) return -1
+
 		let list = this.who != 'bot' ? this.list_elements.toReversed() : this.list_elements
 		let block = document.createElement('div')
 		
@@ -155,7 +156,7 @@ class Dialog{
 			let DIV = document.createElement('div')
 			DIV.classList.add(list[i])
 			if(DIV.classList.contains('text')){
-				DIV.innerText = this.msg 				
+				DIV.innerText = this.msg 
 				if((i + 1) % 2 == 0){
 					DIV.style.marginLeft = '40px'
 					DIV.style.marginRight = '6em'
