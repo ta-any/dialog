@@ -1,13 +1,18 @@
-let first_post = 'In fringilla eget quam ac porttitor. Sed hendrerit ultrices tincidunt. Quisque hendrerit pretium dui, vel ultricies ex fringilla nec. Aliquam eleifend pharetra dolor, eu malesuada libero imperdiet non. Nullam laoreet ullamcorper ipsum, in porttitor metus sagittis non. Cras porttitor placerat eros vel iaculis. Sed vel finibus nisl. Praesent in malesuada risus, sit amet venenatis nibh. Nulla luctus consequat erat nec lobortis. Suspendisse euismod maximus eros vel viverra. Curabitur non ullamcorper tortor. Pellentesque sagittis purus ac tristique ultricies. Cras eget molestie dolor. Morbi non tincidunt sem. '
+localStorage.clear(); 
+let first_post = 'In fringilla eget quam ac porttitor. Sed hendrerit ultrices tincidunt. Quisque hendrerit pretium dui, vel ultricies ex fringilla nec. Proin dolor diam, hendrerit vitae quam non, accumsan rutrum nunc. In mauris metus, congue a eros sed, placerat lacinia urna. Duis a dolor eu elit commodo porta non in est. '
 let next_msg = 'Morbi congue ligula ut laoreet egestas!'
 let list_msgs = ['Integer fringilla nisl sit amet ante varius mollis.',
-		 'Nullam non quam ultrices, finibus magna eu, lacinia odio.', 
-		 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
-		 'Pellentesque mollis sem a tellus congue, at faucibus enim ornare.',
-		 'Vestibulum vestibulum ex ut imperdiet ornare.']
+								 'Nullam non quam ultrices, lacinia odio.', 
+								 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
+								 'Pellentesque at faucibus enim ornare.',
+								 'Vestibulum vestibulum ex ut imperdiet ornare.']
 
 input.value = ''
 input.focus()
+
+const day = new Date()
+const current_year = day.getFullYear()
+const today = day.toISOString().split('T')[0]
 
 
 const memory = {
@@ -17,30 +22,45 @@ const memory = {
 	'11ae2d1a-e720-48f0-b878-6886c4cf1e7d' : {data: '2024-10-28', txt: 'Fusce nec urna quis nisi bibendum cursus a id sem.'},
 	'477a7975-9bc4-4cb6-8a26-96472ceb06bf' : {data: '2024-11-06', txt: 'TODAY! Vestibulum dapibus enim ut viverra feugiat.'}
 }
-for(let node in memory){
+
+const assign_id = () => crypto.randomUUID() for(let node in memory){
 	let value = JSON.stringify(memory[node])
 	localStorage.setItem(node, value);
 }
 
-const day = new Date()
-const current_year = day.getFullYear()
-const today = day.toISOString().split('T')[0]
+for(let node in list_msgs){
+	save_node(list_msgs[node], today, 'timetable')
+}
+
+function save_node(node, data, tag) {
+	let form_node = Object.create( {  
+    data: '', 
+    txt: '', 
+    tag: '',
+	});
+	form_node.txt = node
+	form_node.data = data
+	form_node.tag = tag
+	let value = JSON.stringify(form_node)
+	let ID = assign_id()
+	localStorage.setItem(ID, value);
+}
 
 function get_lst_timetable(day) {
 	let timetable = ''
+	let count = 1
 	for(let line in localStorage){
 		if (!localStorage.hasOwnProperty(line)) continue;	
 		let node = JSON.parse(localStorage.getItem(line))
 		if(node.data == day) {
-			timetable += node.txt + '\n'
+			timetable += (count) + '. ' + node.txt + '\n'
+			count += 1
 		} 
+		
 	}	
 	if (timetable == '') {timetable += 'Nothing!'}
 	return timetable
 }
-
-
-const assign_id = () => crypto.randomUUID()
 
 const Custom = {
 	btm: [{buy : 'buy...'}, {scheduled : 'scheduled to... in...'}, {timetable : 'timetable...'}],
@@ -57,6 +77,34 @@ const Custom = {
 
 		})
 	},
+}
+
+class Hub {
+	input_info = ['buy', 'scheduled']
+	output_info = ['timetable']
+	status = ''
+	constructor(view){
+		this.view = view
+		this.list = this.view.split(' ')	
+	}
+	check(){
+		if( this.input_info.includes(this.list[0]) ){
+			this.status += 'input'
+		} else {
+			this.status += 'output'
+		}
+		const msg = this.list.slice(1)
+		if(this.status == 'input'){
+			this.record_in_memory(msg.join())
+			return 'successfully!'
+		} else {
+			return get_lst_timetable(today)
+		}
+	}
+	record_in_memory(msg){ 
+		save_node(msg, today, this.list[0])
+
+	}
 }
 
 class Dialog{
@@ -78,11 +126,12 @@ class Dialog{
 	send_msg(){
 		this.msg = input.value
 		this.render(this.msg, 'user')
+		const a = new Hub(this.msg) 		let answer = a.check()
 
 		input.value = ''
 		input.focus()
 
-		setTimeout(() => this.answer() , 1500)
+		setTimeout(() => this.render(answer) , 1500)
 			
 	}
 
@@ -92,8 +141,6 @@ class Dialog{
 		} else {
 			this.render('have no idea') 
 		}
-		
-		
 	}
 
 	builder_block_msg(){
@@ -105,7 +152,13 @@ class Dialog{
 			let DIV = document.createElement('div')
 			DIV.classList.add(list[i])
 			if(DIV.classList.contains('text')){
-				DIV.textContent = this.msg
+				DIV.innerText = this.msg 				if((i + 1) % 2 == 0){
+					DIV.style.marginLeft = '40px'
+					DIV.style.marginRight = '6em'
+				} else {
+					DIV.style.marginRight = '20px';
+  				DIV.style.marginLeft = '7.5em';
+				}
 			} 
 			block.appendChild(DIV)
 		}
@@ -183,3 +236,4 @@ nodes.addEventListener('click', (e) => {
 	overall.text_msg(e.target.textContent, e.target)
 	
 })
+
