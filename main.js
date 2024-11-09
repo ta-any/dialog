@@ -2,10 +2,10 @@ localStorage.clear();
 let first_post = 'In fringilla eget quam ac porttitor. Sed hendrerit ultrices tincidunt. Quisque hendrerit pretium dui, vel ultricies ex fringilla nec. Proin dolor diam, hendrerit vitae quam non, accumsan rutrum nunc. In mauris metus, congue a eros sed, placerat lacinia urna. Duis a dolor eu elit commodo porta non in est. '
 let next_msg = 'Morbi congue ligula ut laoreet egestas!'
 let list_msgs = ['Integer fringilla nisl sit amet ante varius mollis.',
-								 'Nullam non quam ultrices, lacinia odio.', 
-								 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
-								 'Pellentesque at faucibus enim ornare.',
-								 'Vestibulum vestibulum ex ut imperdiet ornare.']
+		 'Nullam non quam ultrices, lacinia odio.', 
+		 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
+		 'Pellentesque at faucibus enim ornare.',
+		 'Vestibulum vestibulum ex ut imperdiet ornare.']
 
 input.value = ''
 input.focus()
@@ -33,7 +33,7 @@ for(let node in list_msgs){
 }
 
 function save_node(node, data, tag) {
-	let form_node = Object.create( {  
+    let form_node = Object.create( {  
     data: '', 
     txt: '', 
     tag: '',
@@ -66,16 +66,8 @@ const Custom = {
 	btm: [{buy : 'buy...'}, {scheduled : 'scheduled to... in...'}, {timetable : 'timetable...'}],
 
 	builder_custom_btm(){	
-		this.btm.forEach(node => {
-			let DIV = document.createElement('div')
-			for(let index in node){
-				DIV.textContent = node[index]
-				DIV.classList.add('node')
-				DIV.id = index
-			}
-			nodes.appendChild(DIV)
-
-		})
+		let node = new Builder(this.btm)
+		context.appendChild(node.custom())
 	},
 }
 
@@ -107,16 +99,81 @@ class Hub {
 	}
 }
 
+class Builder{
+	list_elements = ['circle', 'text']
+	constructor(what, how){
+		this.what = what
+		this.how = how
+	}
+	create_DIV(){
+		return document.createElement('div')
+	}
+
+	get_list_HTML(elements){
+		const block = this.create_DIV()
+		for (var i = 0; i < elements.length; i++) {
+			let DIV = document.createElement('div')
+
+			DIV.classList.add(elements[i])
+			block.appendChild(DIV)
+		}
+
+		return block
+	}
+
+	msg(who){
+		if(this.what.length <= 0 || /^\s+$/.test(this.what)) return -1 			
+		let list = who != 'bot' ? this.list_elements.toReversed() : this.list_elements 
+
+		let elements = [...this.get_list_HTML(list).childNodes]
+		let block = this.create_DIV()
+		elements.forEach((div, index) => {
+			this.append_content(div, index)
+			block.appendChild(div)
+		})
+		block.classList.add('post')
+
+		return block
+	}
+
+	append_content(DIV, i){ 
+		if(DIV.classList.contains('text')){
+			DIV.innerText = this.what 			
+				if((i + 1) % 2 == 0){
+					DIV.style.marginLeft = '40px'
+					DIV.style.marginRight = '6em'
+				} else {
+					DIV.style.marginRight = '20px';
+  					DIV.style.marginLeft = '7.5em';
+				}
+		}
+	}
+
+	custom(){
+		const NODES = this.create_DIV()
+		this.what.forEach(node => {
+			let DIV = this.create_DIV()
+			for(let index in node){
+				DIV.textContent = node[index]
+				DIV.classList.add('node')
+				DIV.id = index
+			}
+			NODES.appendChild(DIV)
+		})
+		NODES.classList.add('nodes')
+		NODES.setAttribute('id', 'nodes')
+		return NODES
+	}
+}
+
 class Dialog{
 	Event_Log = [{data: '', event: '', txt: ''}]
-	list_elements = ['circle', 'text']
 
 	constructor(){
 		this.Event_Log[0].data = new Date();
 		this.Event_Log[0].event = 'start'
 
-		this.builder_custom_btm()
-	}
+		this.builder_custom_btm() 	}
 	start(){
 		this.render(first_post)
 		setTimeout(() => this.render(next_msg), 1000)		
@@ -126,7 +183,8 @@ class Dialog{
 	send_msg(){
 		this.msg = input.value
 		this.render(this.msg, 'user')
-		const a = new Hub(this.msg) 		let answer = a.check()
+		const a = new Hub(this.msg) 		
+		let answer = a.check()
 
 		input.value = ''
 		input.focus()
@@ -143,36 +201,13 @@ class Dialog{
 		}
 	}
 
-	builder_block_msg(){
-		if(this.msg.length <= 0 || /^\s+$/.test(this.msg)) return -1 
-		let list = this.who != 'bot' ? this.list_elements.toReversed() : this.list_elements
-		let block = document.createElement('div')
-		
-		for (let i = 0; i < 2; i++) {
-			let DIV = document.createElement('div')
-			DIV.classList.add(list[i])
-			if(DIV.classList.contains('text')){
-				DIV.innerText = this.msg 				if((i + 1) % 2 == 0){
-					DIV.style.marginLeft = '40px'
-					DIV.style.marginRight = '6em'
-				} else {
-					DIV.style.marginRight = '20px';
-  				DIV.style.marginLeft = '7.5em';
-				}
-			} 
-			block.appendChild(DIV)
-		}
-		block.classList.add('post')
-
-		return block
-	}
-
-	render(msg, who = 'bot'){
-				this.msg = msg
+	render(msg, who = 'bot'){ 		
+		this.msg = msg
 		this.who = who
-		this.post = this.builder_block_msg()
-		dialog.appendChild(this.post)
 
+		let post = new Builder(msg)
+		post = post.msg(this.who)
+		dialog.appendChild(post)
 		this.record(new Date(), this.who + ' render', this.msg) 	}
 
 	record(data, event, txt){
@@ -204,7 +239,8 @@ const overall = {
 			txt = txt.slice(0, index).concat(' ', txt.slice(index + 3, -1)) 
 		}
 		
-		if(id == 'timetable'){ 			txt += 'today'
+		if(id == 'timetable'){ 			
+			txt += 'today'
 			this.append_focus(txt, [first_index, first_index + 5])
 		} else {
 			this.append_focus(txt, [first_index, first_index])
@@ -236,4 +272,3 @@ nodes.addEventListener('click', (e) => {
 	overall.text_msg(e.target.textContent, e.target)
 	
 })
-
