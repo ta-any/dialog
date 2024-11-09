@@ -23,7 +23,8 @@ const memory = {
 	'477a7975-9bc4-4cb6-8a26-96472ceb06bf' : {data: '2024-11-06', txt: 'TODAY! Vestibulum dapibus enim ut viverra feugiat.'}
 }
 
-const assign_id = () => crypto.randomUUID() for(let node in memory){
+const assign_id = () => crypto.randomUUID()
+for(let node in memory){
 	let value = JSON.stringify(memory[node])
 	localStorage.setItem(node, value);
 }
