@@ -23,9 +23,7 @@ const memory = {
 	'477a7975-9bc4-4cb6-8a26-96472ceb06bf' : {data: '2024-11-06', txt: 'TODAY! Vestibulum dapibus enim ut viverra feugiat.'}
 }
 
-const assign_id = () => crypto.randomUUID() 
-	
-for(let node in memory){
+const assign_id = () => crypto.randomUUID() for(let node in memory){
 	let value = JSON.stringify(memory[node])
 	localStorage.setItem(node, value);
 }
@@ -35,7 +33,7 @@ for(let node in list_msgs){
 }
 
 function save_node(node, data, tag) {
-	let form_node = Object.create( {  
+    let form_node = Object.create( {  
     data: '', 
     txt: '', 
     tag: '',
@@ -68,16 +66,8 @@ const Custom = {
 	btm: [{buy : 'buy...'}, {scheduled : 'scheduled to... in...'}, {timetable : 'timetable...'}],
 
 	builder_custom_btm(){	
-		this.btm.forEach(node => {
-			let DIV = document.createElement('div')
-			for(let index in node){
-				DIV.textContent = node[index]
-				DIV.classList.add('node')
-				DIV.id = index
-			}
-			nodes.appendChild(DIV)
-
-		})
+		let node = new Builder(this.btm)
+		context.appendChild(node.custom())
 	},
 }
 
@@ -109,16 +99,81 @@ class Hub {
 	}
 }
 
+class Builder{
+	list_elements = ['circle', 'text']
+	constructor(what, how){
+		this.what = what
+		this.how = how
+	}
+	create_DIV(){
+		return document.createElement('div')
+	}
+
+	get_list_HTML(elements){
+		const block = this.create_DIV()
+		for (var i = 0; i < elements.length; i++) {
+			let DIV = document.createElement('div')
+
+			DIV.classList.add(elements[i])
+			block.appendChild(DIV)
+		}
+
+		return block
+	}
+
+	msg(who){
+		if(this.what.length <= 0 || /^\s+$/.test(this.what)) return -1 		
+		let list = who != 'bot' ? this.list_elements.toReversed() : this.list_elements 
+
+		let elements = [...this.get_list_HTML(list).childNodes]
+		let block = this.create_DIV()
+		elements.forEach((div, index) => {
+			this.append_content(div, index)
+			block.appendChild(div)
+		})
+		block.classList.add('post')
+
+		return block
+	}
+
+	append_content(DIV, i){ 
+		if(DIV.classList.contains('text')){
+			DIV.innerText = this.what 			
+				if((i + 1) % 2 == 0){
+					DIV.style.marginLeft = '40px'
+					DIV.style.marginRight = '6em'
+				} else {
+					DIV.style.marginRight = '20px';
+  					DIV.style.marginLeft = '7.5em';
+				}
+		}
+	}
+
+	custom(){
+		const NODES = this.create_DIV()
+		this.what.forEach(node => {
+			let DIV = this.create_DIV()
+			for(let index in node){
+				DIV.textContent = node[index]
+				DIV.classList.add('node')
+				DIV.id = index
+			}
+			NODES.appendChild(DIV)
+		})
+		NODES.classList.add('nodes')
+		NODES.setAttribute('id', 'nodes')
+		return NODES
+	}
+}
+
 class Dialog{
 	Event_Log = [{data: '', event: '', txt: ''}]
-	list_elements = ['circle', 'text']
 
 	constructor(){
 		this.Event_Log[0].data = new Date();
 		this.Event_Log[0].event = 'start'
 
-		this.builder_custom_btm()
-	}
+		this.builder_custom_btm() 	}
 	start(){
 		this.render(first_post)
 		setTimeout(() => this.render(next_msg), 1000)		
@@ -146,38 +201,14 @@ class Dialog{
 		}
 	}
 
-	builder_block_msg(){
-		if(this.msg.length <= 0 || /^\s+$/.test(this.msg)) return -1
-
-		let list = this.who != 'bot' ? this.list_elements.toReversed() : this.list_elements
-		let block = document.createElement('div')
-		
-		for (let i = 0; i < 2; i++) {
-			let DIV = document.createElement('div')
-			DIV.classList.add(list[i])
-			if(DIV.classList.contains('text')){
-				DIV.innerText = this.msg 
-				if((i + 1) % 2 == 0){
-					DIV.style.marginLeft = '40px'
-					DIV.style.marginRight = '6em'
-				} else {
-					DIV.style.marginRight = '20px';
-  				DIV.style.marginLeft = '7.5em';
-				}
-			} 
-			block.appendChild(DIV)
-		}
-		block.classList.add('post')
-
-		return block
-	}
-
-	render(msg, who = 'bot'){
+	render(msg, who = 'bot'){ 		
 		this.msg = msg
 		this.who = who
-		this.post = this.builder_block_msg()
-		dialog.appendChild(this.post)
 
+		let post = new Builder(msg)
+		post = post.msg(this.who)
+
+		dialog.appendChild(post)
 		this.record(new Date(), this.who + ' render', this.msg) 	}
 
 	record(data, event, txt){
