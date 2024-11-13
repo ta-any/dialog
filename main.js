@@ -23,7 +23,9 @@ const memory = {
 	'477a7975-9bc4-4cb6-8a26-96472ceb06bf' : {data: '2024-11-06', txt: 'TODAY! Vestibulum dapibus enim ut viverra feugiat.'}
 }
 
-const assign_id = () => crypto.randomUUID() for(let node in memory){
+const assign_id = () => crypto.randomUUID() 
+
+for(let node in memory){
 	let value = JSON.stringify(memory[node])
 	localStorage.setItem(node, value);
 }
@@ -33,7 +35,7 @@ for(let node in list_msgs){
 }
 
 function save_node(node, data, tag) {
-    let form_node = Object.create( {  
+	let form_node = Object.create( {  
     data: '', 
     txt: '', 
     tag: '',
@@ -82,15 +84,18 @@ class Hub {
 	check(){
 		if( this.input_info.includes(this.list[0]) ){
 			this.status += 'input'
-		} else {
+		} else if (this.output_info.includes(this.list[0])) {
 			this.status += 'output'
 		}
 		const msg = this.list.slice(1)
 		if(this.status == 'input'){
 			this.record_in_memory(msg.join())
-			return 'successfully!'
+			return ['successfully!']
+
+		} else if(this.status == 'output') {
+			return [get_lst_timetable(today), this.status]
 		} else {
-			return get_lst_timetable(today)
+			return ['have no idea']
 		}
 	}
 	record_in_memory(msg){ 
@@ -100,7 +105,8 @@ class Hub {
 }
 
 class Builder{
-	list_elements = ['circle', 'text']
+	list_elements = ['circle', 'wraper_text_post']
+	change_content = ['delete', 'edit'] 
 	constructor(what, how){
 		this.what = what
 		this.how = how
@@ -109,7 +115,7 @@ class Builder{
 		return document.createElement('div')
 	}
 
-	get_list_HTML(elements){
+	get_HTML(elements){
 		const block = this.create_DIV()
 		for (var i = 0; i < elements.length; i++) {
 			let DIV = document.createElement('div')
@@ -122,10 +128,10 @@ class Builder{
 	}
 
 	msg(who){
-		if(this.what.length <= 0 || /^\s+$/.test(this.what)) return -1 			
+		if(this.what.length <= 0 || /^\s+$/.test(this.what)) return -1 		
 		let list = who != 'bot' ? this.list_elements.toReversed() : this.list_elements 
 
-		let elements = [...this.get_list_HTML(list).childNodes]
+		let elements = [...this.get_HTML(list).childNodes]
 		let block = this.create_DIV()
 		elements.forEach((div, index) => {
 			this.append_content(div, index)
@@ -136,16 +142,40 @@ class Builder{
 		return block
 	}
 
-	append_content(DIV, i){ 
-		if(DIV.classList.contains('text')){
-			DIV.innerText = this.what 			
-				if((i + 1) % 2 == 0){
-					DIV.style.marginLeft = '40px'
-					DIV.style.marginRight = '6em'
-				} else {
-					DIV.style.marginRight = '20px';
-  					DIV.style.marginLeft = '7.5em';
-				}
+	msg_with_footer(){
+		let block = this.msg('bot')
+		let footer = this.create_DIV()
+		let change = this.create_DIV()
+		let change_block = [...this.get_HTML(this.change_content).children]
+		change_block.forEach((div, index) => {
+			div.textContent = this.change_content[index]
+			change.appendChild(div)
+		})
+
+		change.classList.add('change_content')
+		footer.classList.add('footer_post')
+		footer.appendChild(change)
+
+		let wraper = block.querySelector('.wraper_text_post')
+
+		wraper.appendChild(footer)
+		return block
+	}
+
+	append_content(DIV, i, footer=false){ 
+		if(DIV.classList.contains('wraper_text_post')){
+			let text = this.create_DIV()
+			text.innerText = this.what 			
+			text.classList.add('text')
+			DIV.style.width = '70%'
+			if((i + 1) % 2 == 0){
+				DIV.style.marginLeft = '40px'
+				DIV.style.marginRight = '6em'
+			} else {
+				DIV.style.marginRight = '20px';
+			DIV.style.marginLeft = '7.5em';
+			}
+		DIV.appendChild(text)
 		}
 	}
 
@@ -183,32 +213,35 @@ class Dialog{
 	send_msg(){
 		this.msg = input.value
 		this.render(this.msg, 'user')
-		const a = new Hub(this.msg) 		
-		let answer = a.check()
 
-		input.value = ''
-		input.focus()
-
-		setTimeout(() => this.render(answer) , 1500)
-			
+		this.answer()			
 	}
 
 	answer(){
-		if(this.msg.includes('today')){
-			this.render(get_lst_timetable(today)) 
-		} else {
-			this.render('have no idea') 
-		}
+		const a = new Hub(this.msg) 		
+		let [answer, status] = a.check()
+		input.value = ''
+		input.focus()
+
+		setTimeout(() => this.render(answer, 'bot', status) , 1500)
 	}
 
-	render(msg, who = 'bot'){ 		
+	render(msg, who = 'bot', status){ 		
 		this.msg = msg
 		this.who = who
 
-		let post = new Builder(msg)
-		post = post.msg(this.who)
+		let post = new Builder(this.msg)
+		
+		if(status == 'output' && this.who == 'bot'){
+			post = post.msg_with_footer() 		} 
+		else {
+			post = post.msg(this.who)
+		}
+
 		dialog.appendChild(post)
-		this.record(new Date(), this.who + ' render', this.msg) 	}
+
+		this.record(new Date(), this.who + ' render', this.msg) 	
+	}
 
 	record(data, event, txt){
 		let log = {}
@@ -272,3 +305,4 @@ nodes.addEventListener('click', (e) => {
 	overall.text_msg(e.target.textContent, e.target)
 	
 })
+
