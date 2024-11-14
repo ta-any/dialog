@@ -8,6 +8,43 @@
 	margin: 0 auto;
 	height: 100vh;
 }
+#modul_edit{
+	position: absolute;
+	width: 100%;
+	height: 100vh;
+	border: solid 1px #000;
+	display: none;
+	background-color: #999;
+}
+.modul_background{
+	width: 85vh;
+	margin: 45px auto;
+	background: #fff;
+	height: 45vh;
+	display: block;
+	-webkit-box-shadow: 0px -5px 10px 2px rgba(34, 60, 80, 0.2);
+	-moz-box-shadow: 0px -5px 10px 2px rgba(34, 60, 80, 0.2);
+	box-shadow: 0px -5px 10px 2px rgba(34, 60, 80, 0.2);
+}
+.txt_edit{
+	line-height: 2em;
+	width: 90%;
+	margin: 55px auto 95px 30px;
+	padding: 10px;
+	height: 40%;
+}
+.block_btn{
+	width: 200px;
+	margin: 0 auto;
+	display: flex;
+	justify-content: space-around;
+}
+.block_btn button{
+	cursor: pointer;
+	padding: 10px 20px;
+	background: none;
+	border: 1px solid gray;
+}
 .dialog{
 	box-sizing: border-box;
 	justify-content: end;

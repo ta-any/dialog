@@ -2,10 +2,10 @@ localStorage.clear();
 let first_post = 'In fringilla eget quam ac porttitor. Sed hendrerit ultrices tincidunt. Quisque hendrerit pretium dui, vel ultricies ex fringilla nec. Proin dolor diam, hendrerit vitae quam non, accumsan rutrum nunc. In mauris metus, congue a eros sed, placerat lacinia urna. Duis a dolor eu elit commodo porta non in est. '
 let next_msg = 'Morbi congue ligula ut laoreet egestas!'
 let list_msgs = ['Integer fringilla nisl sit amet ante varius mollis.',
-								 'Nullam non quam ultrices, lacinia odio.', 
-								 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
-								 'Pellentesque at faucibus enim ornare.',
-								 'Vestibulum vestibulum ex ut imperdiet ornare.']
+		 'Nullam non quam ultrices, lacinia odio.', 
+		 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
+		 'Pellentesque at faucibus enim ornare.',
+		 'Vestibulum vestibulum ex ut imperdiet ornare.']
 
 input.value = ''
 input.focus()
@@ -22,6 +22,11 @@ const memory = {
 	'11ae2d1a-e720-48f0-b878-6886c4cf1e7d' : {data: '2024-10-28', txt: 'Fusce nec urna quis nisi bibendum cursus a id sem.'},
 	'477a7975-9bc4-4cb6-8a26-96472ceb06bf' : {data: '2024-11-06', txt: 'TODAY! Vestibulum dapibus enim ut viverra feugiat.'}
 }
+
+
+
+const open_modul = (block) => block.style.display = 'block'
+const close_modul = (block) => block.style.display = 'none'
 
 const assign_id = () => crypto.randomUUID() 
 
@@ -129,7 +134,8 @@ class Builder{
 
 	msg(who){
 		if(this.what.length <= 0 || /^\s+$/.test(this.what)) return -1 		
-    let list = who != 'bot' ? this.list_elements.toReversed() : this.list_elements 
+
+		let list = who != 'bot' ? this.list_elements.toReversed() : this.list_elements 
 
 		let elements = [...this.get_HTML(list).childNodes]
 		let block = this.create_DIV()
@@ -166,7 +172,7 @@ class Builder{
 		if(DIV.classList.contains('wraper_text_post')){
 			let text = this.create_DIV()
 			text.innerText = this.what 			
-      text.classList.add('text')
+			text.classList.add('text')
 			DIV.style.width = '70%'
 			if((i + 1) % 2 == 0){
 					DIV.style.marginLeft = '40px'
@@ -204,11 +210,53 @@ class Dialog{
 		this.Event_Log[0].event = 'start'
 
 		this.builder_custom_btm() 	
-  }
+	}
 	start(){
 		this.render(first_post)
-		setTimeout(() => this.render(next_msg), 1000)		
 
+		setTimeout(() => {
+			const a = new Hub('timetable today') 			
+			let [answer, status] = a.check()
+			
+			this.render(answer, 'bot', status)
+			const change_content = document.querySelector('.change_content')
+
+			change_content.addEventListener('click', (e) => {
+				let path = e.target.className
+				
+				if('edit' == path){
+					let txt = e.target.parentElement.parentElement.parentElement.children[0].innerText
+					open_modul(modul_edit)
+
+					txt_edit.value = txt
+					txt_edit.focus()
+				}
+				
+				close_block.addEventListener('click', () => {
+					close_modul(modul_edit)
+					txt_edit.value = ''
+				})
+
+				save_msg.addEventListener('click', () => {
+					let ny_txt = txt_edit.value								
+					
+					this.render(txt_edit.value, 'user', 'input')
+					close_modul(modul_edit)
+					txt_edit.value = ''
+					
+				})
+
+				modul_edit.addEventListener( 'keyup', e => {
+				  if( e.code === 'Enter' ){
+				  	let ny_txt = txt_edit.value
+						
+						this.render(txt_edit.value, 'user', 'input')
+						close_modul(modul_edit)
+						txt_edit.value = ''
+				  }
+				});
+			})	
+		}, 0)
 	}
 
 	send_msg(){
@@ -220,7 +268,7 @@ class Dialog{
 
 	answer(){
 		const a = new Hub(this.msg) 		
-    let [answer, status] = a.check()
+		let [answer, status] = a.check()
 
 		input.value = ''
 		input.focus()
@@ -229,20 +277,21 @@ class Dialog{
 	}
 
 	render(msg, who = 'bot', status){ 		
-    this.msg = msg
+		this.msg = msg
 		this.who = who
 
 		let post = new Builder(this.msg)
 		
 		if(status == 'output' && this.who == 'bot'){
-			post = post.msg_with_footer() 		} 
-    else {
+			post = post.msg_with_footer() 
+		} else {
 			post = post.msg(this.who)
 		}
 
-				dialog.appendChild(post)
+		dialog.appendChild(post)
 
-		this.record(new Date(), this.who + ' render', this.msg) 	}
+		this.record(new Date(), this.who + ' render', this.msg) 	
+	}
 
 	record(data, event, txt){
 		let log = {}
@@ -273,8 +322,7 @@ const overall = {
 			txt = txt.slice(0, index).concat(' ', txt.slice(index + 3, -1)) 
 		}
 		
-		if(id == 'timetable'){ 			
-      txt += 'today'
+		if(id == 'timetable'){ 			txt += 'today'
 			this.append_focus(txt, [first_index, first_index + 5])
 		} else {
 			this.append_focus(txt, [first_index, first_index])
@@ -294,7 +342,7 @@ const overall = {
 const event = new Dialog()
 event.start()
 
-document.addEventListener( 'keyup', e => {
+input.addEventListener( 'keyup', e => {
   if( e.code === 'Enter' ) event.send_msg();
 });
 
@@ -306,4 +354,3 @@ nodes.addEventListener('click', (e) => {
 	overall.text_msg(e.target.textContent, e.target)
 	
 })
-
