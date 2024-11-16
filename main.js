@@ -29,7 +29,7 @@ const open_modul = (block) => block.style.display = 'block'
 const close_modul = (block) => block.style.display = 'none'
 
 const assign_id = () => crypto.randomUUID() 
-
+	
 for(let node in memory){
 	let value = JSON.stringify(memory[node])
 	localStorage.setItem(node, value);
@@ -53,20 +53,22 @@ function save_node(node, data, tag) {
 	localStorage.setItem(ID, value);
 }
 
-function get_lst_timetable(day) {
-	let timetable = ''
+function get_lst_timetable(day) { 	let result = []
+	let timetable = []
+	let list_ID = []
 	let count = 1
 	for(let line in localStorage){
 		if (!localStorage.hasOwnProperty(line)) continue;	
 		let node = JSON.parse(localStorage.getItem(line))
 		if(node.data == day) {
-			timetable += (count) + '. ' + node.txt + '\n'
-			count += 1
+			timetable.push(node.txt)
+			list_ID.push(line)
 		} 
 		
 	}	
-	if (timetable == '') {timetable += 'Nothing!'}
-	return timetable
+	if (timetable == '') {timetable += 'Nothing!'} 	result.push(timetable)
+	result.push(list_ID)
+	return result
 }
 
 const Custom = {
@@ -98,7 +100,7 @@ class Hub {
 			return ['successfully!']
 
 		} else if(this.status == 'output') {
-			return [get_lst_timetable(today), this.status]
+			return [...get_lst_timetable(today), this.status]
 		} else {
 			return ['have no idea']
 		}
@@ -134,7 +136,6 @@ class Builder{
 
 	msg(who){
 		if(this.what.length <= 0 || /^\s+$/.test(this.what)) return -1 		
-
 		let list = who != 'bot' ? this.list_elements.toReversed() : this.list_elements 
 
 		let elements = [...this.get_HTML(list).childNodes]
@@ -184,7 +185,6 @@ class Builder{
 			DIV.appendChild(text)
 		}
 	}
-
 	custom(){
 		const NODES = this.create_DIV()
 		this.what.forEach(node => {
@@ -200,6 +200,76 @@ class Builder{
 		NODES.setAttribute('id', 'nodes')
 		return NODES
 	}
+	builder_list_msg(){
+		let count = 1
+		let lst = ''
+		this.what.forEach(node => {
+			lst += (count) + '. ' + node + '\n'
+			count += 1
+		})
+		return lst
+	}
+}
+
+class Modul{
+	change_content = document.querySelector('.change_content')
+	constructor(msg, ID, data){
+		this.msg = msg
+		this.ID = ID
+		this.data = data
+	}
+	init(){
+		this.change_content.addEventListener('click', (e) => {
+				let path = e.target.className
+				
+				if('edit' == path){
+					let txt = e.target.parentElement.parentElement.parentElement.children[0].innerText
+					open_modul(modul_edit)
+
+					let lst = ''
+					this.msg.forEach(node => {
+						lst += node + '\n'
+					})
+					txt_edit.value = lst
+					txt_edit.focus()
+				}
+				
+				close_block.addEventListener('click', () => {
+					close_modul(modul_edit)
+					txt_edit.value = ''
+				})
+
+				save_msg.addEventListener('click', () => {					
+					let list_nodes = txt_edit.value.split('\n')
+					let constant_list_node = []
+
+					this.ID.forEach(id => {
+						let node = JSON.parse(localStorage.getItem(id)) 
+						let status = list_nodes.includes(node.txt)
+						if(status) {
+							constant_list_node.push(node.txt)
+						} else {
+							localStorage.removeItem(id)
+						}
+					})
+					let tmp_txt = []
+					list_nodes.forEach(node => {
+						if(!constant_list_node.includes(node)){
+							tmp_txt.push(node)
+						}
+					})
+
+					tmp_txt.forEach(node => {
+						if(node.length > 0) save_node(node, today, 'timetable') 				
+					})
+
+					this.data.render(txt_edit.value, 'user', 'input')
+					close_modul(modul_edit)
+					txt_edit.value = ''
+					
+				})															
+		})
+	}
 }
 
 class Dialog{
@@ -213,49 +283,15 @@ class Dialog{
 	}
 	start(){
 		this.render(first_post)
-
-		setTimeout(() => {
+				setTimeout(() => {
 			const a = new Hub('timetable today') 			
-			let [answer, status] = a.check()
+			let [txt_answer, ID, status] = a.check()
+			const answer = new Builder([...txt_answer])
 			
-			this.render(answer, 'bot', status)
-			const change_content = document.querySelector('.change_content')
+			this.render(answer.builder_list_msg(), 'bot', status)
+			const modul = new Modul([...txt_answer], ID, this)
+			modul.init()
 
-			change_content.addEventListener('click', (e) => {
-				let path = e.target.className
-				
-				if('edit' == path){
-					let txt = e.target.parentElement.parentElement.parentElement.children[0].innerText
-					open_modul(modul_edit)
-
-					txt_edit.value = txt
-					txt_edit.focus()
-				}
-				
-				close_block.addEventListener('click', () => {
-					close_modul(modul_edit)
-					txt_edit.value = ''
-				})
-
-				save_msg.addEventListener('click', () => {
-					let ny_txt = txt_edit.value								
-					
-					this.render(txt_edit.value, 'user', 'input')
-					close_modul(modul_edit)
-					txt_edit.value = ''
-					
-				})
-
-				modul_edit.addEventListener( 'keyup', e => {
-				  if( e.code === 'Enter' ){
-				  	let ny_txt = txt_edit.value
-						
-						this.render(txt_edit.value, 'user', 'input')
-						close_modul(modul_edit)
-						txt_edit.value = ''
-				  }
-				});
-			})	
 		}, 0)
 	}
 
@@ -268,12 +304,13 @@ class Dialog{
 
 	answer(){
 		const a = new Hub(this.msg) 		
-		let [answer, status] = a.check()
+		let [txt_answer, ID, status] = a.check()
+		const answer = new Builder([...txt_answer])
 
 		input.value = ''
 		input.focus()
 
-		setTimeout(() => this.render(answer, 'bot', status) , 1500)
+		setTimeout(() => this.render(answer.builder_list_msg(), 'bot', status) , 1500)
 	}
 
 	render(msg, who = 'bot', status){ 		
@@ -290,8 +327,7 @@ class Dialog{
 
 		dialog.appendChild(post)
 
-		this.record(new Date(), this.who + ' render', this.msg) 	
-	}
+		this.record(new Date(), this.who + ' render', this.msg) 	}
 
 	record(data, event, txt){
 		let log = {}
@@ -322,13 +358,12 @@ const overall = {
 			txt = txt.slice(0, index).concat(' ', txt.slice(index + 3, -1)) 
 		}
 		
-		if(id == 'timetable'){ 			txt += 'today'
+		if(id == 'timetable'){ 			
+			txt += 'today'
 			this.append_focus(txt, [first_index, first_index + 5])
 		} else {
 			this.append_focus(txt, [first_index, first_index])
 		}
-
-		
 	},
 	append_focus(txt, [start, end]){
 		input.value = txt
@@ -354,3 +389,5 @@ nodes.addEventListener('click', (e) => {
 	overall.text_msg(e.target.textContent, e.target)
 	
 })
+
+
