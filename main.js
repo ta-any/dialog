@@ -2,10 +2,10 @@ localStorage.clear();
 let first_post = 'In fringilla eget quam ac porttitor. Sed hendrerit ultrices tincidunt. Quisque hendrerit pretium dui, vel ultricies ex fringilla nec. Proin dolor diam, hendrerit vitae quam non, accumsan rutrum nunc. In mauris metus, congue a eros sed, placerat lacinia urna. Duis a dolor eu elit commodo porta non in est. '
 let next_msg = 'Morbi congue ligula ut laoreet egestas!'
 let list_msgs = ['Integer fringilla nisl sit amet ante varius mollis.',
-								 'Nullam non quam ultrices, lacinia odio.', 
-								 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
-								 'Pellentesque at faucibus enim ornare.',
-								 'Vestibulum vestibulum ex ut imperdiet ornare.']
+		 'Nullam non quam ultrices, lacinia odio.', 
+		 'Suspendisse ut lacus mollis, pharetra est et, cursus velit.', 
+		 'Pellentesque at faucibus enim ornare.',
+		 'Vestibulum vestibulum ex ut imperdiet ornare.']
 
 input.value = ''
 input.focus()
