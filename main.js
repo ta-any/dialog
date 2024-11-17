@@ -10,10 +10,6 @@ let list_msgs = ['Integer fringilla nisl sit amet ante varius mollis.',
 input.value = ''
 input.focus()
 
-const day = new Date()
-const current_year = day.getFullYear()
-const today = day.toISOString().split('T')[0]
-
 
 const memory = {
 	'8d10c5fa-d3be-43fc-8760-466eadb1389f' : {data: '2024-11-01', txt: 'In fermentum lectus a commodo fermentum.'},
@@ -29,46 +25,44 @@ const open_modul = (block) => block.style.display = 'block'
 const close_modul = (block) => block.style.display = 'none'
 
 const assign_id = () => crypto.randomUUID() 
-	
-for(let node in memory){
-	let value = JSON.stringify(memory[node])
-	localStorage.setItem(node, value);
-}
+const day = new Date()
+const current_year =  day.getFullYear()
+const today = day.toISOString().split('T')[0]
 
-for(let node in list_msgs){
-	save_node(list_msgs[node], today, 'timetable')
-}
+const Interval = {
+	save_node(node, data, tag) {
+		let form_node = Object.create( {  
+	    data: '', 
+	    txt: '', 
+	    tag: '',
+		});
+		form_node.txt = node
+		form_node.data = data
+		form_node.tag = tag
+		let value = JSON.stringify(form_node)
+		let ID = assign_id()
+		localStorage.setItem(ID, value);
+	},
+	get_lst_timetable(day) { 		
+		let result = []
+		let timetable = []
+		let list_ID = []
+		let count = 1
+		for(let line in localStorage){
+			if (!localStorage.hasOwnProperty(line)) continue;	
+			let node = JSON.parse(localStorage.getItem(line))
+			if(node.data == day) {
+				timetable.push(node.txt)
+				list_ID.push(line)
 
-function save_node(node, data, tag) {
-	let form_node = Object.create( {  
-    data: '', 
-    txt: '', 
-    tag: '',
-	});
-	form_node.txt = node
-	form_node.data = data
-	form_node.tag = tag
-	let value = JSON.stringify(form_node)
-	let ID = assign_id()
-	localStorage.setItem(ID, value);
-}
-
-function get_lst_timetable(day) { 	let result = []
-	let timetable = []
-	let list_ID = []
-	let count = 1
-	for(let line in localStorage){
-		if (!localStorage.hasOwnProperty(line)) continue;	
-		let node = JSON.parse(localStorage.getItem(line))
-		if(node.data == day) {
-			timetable.push(node.txt)
-			list_ID.push(line)
-		} 
-		
-	}	
-	if (timetable == '') {timetable += 'Nothing!'} 	result.push(timetable)
-	result.push(list_ID)
-	return result
+			} 
+			
+		}	
+		if (timetable == '') {timetable += 'Nothing!'} 
+		result.push(timetable)
+		result.push(list_ID)
+		return result
+	},
 }
 
 const Custom = {
@@ -100,13 +94,13 @@ class Hub {
 			return ['successfully!']
 
 		} else if(this.status == 'output') {
-			return [...get_lst_timetable(today), this.status]
+			return [...Interval.get_lst_timetable(today), this.status]
 		} else {
 			return ['have no idea']
 		}
 	}
 	record_in_memory(msg){ 
-		save_node(msg, today, this.list[0])
+		this.save_node(msg, today, this.list[0])
 
 	}
 }
@@ -135,7 +129,7 @@ class Builder{
 	}
 
 	msg(who){
-		if(this.what.length <= 0 || /^\s+$/.test(this.what)) return -1 		
+		if(this.what.length <= 0 || /^\s+$/.test(this.what)) return -1 
 		let list = who != 'bot' ? this.list_elements.toReversed() : this.list_elements 
 
 		let elements = [...this.get_HTML(list).childNodes]
@@ -172,7 +166,7 @@ class Builder{
 	append_content(DIV, i, footer=false){ 
 		if(DIV.classList.contains('wraper_text_post')){
 			let text = this.create_DIV()
-			text.innerText = this.what 			
+			text.innerText = this.what 
 			text.classList.add('text')
 			DIV.style.width = '70%'
 			if((i + 1) % 2 == 0){
@@ -260,15 +254,17 @@ class Modul{
 					})
 
 					tmp_txt.forEach(node => {
-						if(node.length > 0) save_node(node, today, 'timetable') 				
+						if(node.length > 0) this.data.save_node(node, today, 'timetable') 
 					})
 
+					
 					this.data.render(txt_edit.value, 'user', 'input')
 					close_modul(modul_edit)
 					txt_edit.value = ''
+
 					
-				})															
-		})
+				})																
+			})
 	}
 }
 
@@ -279,13 +275,13 @@ class Dialog{
 		this.Event_Log[0].data = new Date();
 		this.Event_Log[0].event = 'start'
 
-		this.builder_custom_btm() 	
+		this.builder_custom_btm() 
 	}
 	start(){
 		this.render(first_post)
-				setTimeout(() => {
-			const a = new Hub('timetable today') 			
-			let [txt_answer, ID, status] = a.check()
+		
+		setTimeout(() => {
+			const a = new Hub('timetable today') 			let [txt_answer, ID, status] = a.check()
 			const answer = new Builder([...txt_answer])
 			
 			this.render(answer.builder_list_msg(), 'bot', status)
@@ -303,7 +299,7 @@ class Dialog{
 	}
 
 	answer(){
-		const a = new Hub(this.msg) 		
+		const a = new Hub(this.msg) 
 		let [txt_answer, ID, status] = a.check()
 		const answer = new Builder([...txt_answer])
 
@@ -313,7 +309,7 @@ class Dialog{
 		setTimeout(() => this.render(answer.builder_list_msg(), 'bot', status) , 1500)
 	}
 
-	render(msg, who = 'bot', status){ 		
+	render(msg, who = 'bot', status){ 
 		this.msg = msg
 		this.who = who
 
@@ -325,9 +321,11 @@ class Dialog{
 			post = post.msg(this.who)
 		}
 
+		
 		dialog.appendChild(post)
 
-		this.record(new Date(), this.who + ' render', this.msg) 	}
+		this.record(new Date(), this.who + ' render', this.msg) 
+	}
 
 	record(data, event, txt){
 		let log = {}
@@ -348,6 +346,7 @@ class Dialog{
 }
 
 Object.assign(Dialog.prototype, Custom);
+Object.assign(Dialog.prototype, Interval);
 
 const overall = {
 	text_msg(txt, element){
@@ -358,12 +357,14 @@ const overall = {
 			txt = txt.slice(0, index).concat(' ', txt.slice(index + 3, -1)) 
 		}
 		
-		if(id == 'timetable'){ 			
+		if(id == 'timetable'){ 
 			txt += 'today'
 			this.append_focus(txt, [first_index, first_index + 5])
 		} else {
 			this.append_focus(txt, [first_index, first_index])
 		}
+
+		
 	},
 	append_focus(txt, [start, end]){
 		input.value = txt
@@ -389,5 +390,16 @@ nodes.addEventListener('click', (e) => {
 	overall.text_msg(e.target.textContent, e.target)
 	
 })
+
+
+
+for(let node in memory){
+	let value = JSON.stringify(memory[node])
+	localStorage.setItem(node, value);
+}
+
+for(let node in list_msgs){
+	Interval.save_node(list_msgs[node], today, 'timetable')
+}
 
 
